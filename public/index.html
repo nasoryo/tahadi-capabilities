@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تحدي القدرات - ترتيب الطلاب</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+    .gold-glow { box-shadow: 0 0 15px rgba(245, 158, 11, 0.3); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-indigo-800 via-indigo-700 to-purple-800 text-white shadow-lg relative overflow-hidden py-8">
+    <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full blur-2xl"></div>
+    <div class="absolute -left-10 -top-10 w-40 h-40 bg-indigo-400/10 rounded-full blur-2xl"></div>
+    <div class="container mx-auto px-4 text-center relative z-10">
+      <div class="inline-block bg-white/10 backdrop-blur-md px-4 py-1 rounded-full text-xs font-bold text-indigo-200 mb-3 border border-white/10">
+        🏆 العام الدراسي الحالي
+      </div>
+      <h1 class="text-3xl md:text-5xl font-black tracking-tight mb-2">تحدي القدرات</h1>
+      <p class="text-indigo-100 text-sm md:text-base font-medium max-w-lg mx-auto">
+        جدول الترتيب ولوحة الشرف الأسبوعية للطلاب المتفوقين
+      </p>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-8 flex-grow max-w-5xl">
+    
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-2 gap-4 mb-8">
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-slate-400 mb-1">إجمالي الطلاب</p>
+          <h3 id="statStudents" class="text-3xl font-black text-indigo-600">--</h3>
+        </div>
+        <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-bold text-xl">👥</div>
+      </div>
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-slate-400 mb-1">الاختبارات المنفذة</p>
+          <h3 id="statTests" class="text-3xl font-black text-emerald-600">--</h3>
+        </div>
+        <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 font-bold text-xl">📝</div>
+      </div>
+    </div>
+
+    <!-- Controls: Search & Tabs -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 space-y-4">
+      <div class="flex flex-col md:flex-row gap-3 items-center justify-between">
+        <!-- Search Input -->
+        <div class="relative w-full md:w-72">
+          <input type="text" id="searchInput" oninput="filterStudents()" placeholder="🔍 ابحث عن اسم طالب..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition">
+        </div>
+        <!-- Refresh Button -->
+        <button onclick="loadLeaderboard()" class="w-full md:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center justify-center gap-2">
+          🔄 تحديث الترتيب
+        </button>
+      </div>
+
+      <!-- Class Tabs -->
+      <div class="flex flex-wrap gap-2 border-t border-slate-100 pt-3 justify-center md:justify-start">
+        <button onclick="switchTab('')" id="tab-all" class="tab-btn px-4 py-2 rounded-xl font-bold text-xs transition bg-indigo-600 text-white shadow-sm">الترتيب العام</button>
+        <button onclick="switchTab('الفصل (أ)')" id="tab-الفصل (أ)" class="tab-btn px-4 py-2 rounded-xl font-semibold text-xs text-slate-600 bg-slate-50 hover:bg-slate-100">الفصل (أ)</button>
+        <button onclick="switchTab('الفصل (ب)')" id="tab-الفصل (ب)" class="tab-btn px-4 py-2 rounded-xl font-semibold text-xs text-slate-600 bg-slate-50 hover:bg-slate-100">الفصل (ب)</button>
+        <button onclick="switchTab('الفصل (ج)')" id="tab-الفصل (ج)" class="tab-btn px-4 py-2 rounded-xl font-semibold text-xs text-slate-600 bg-slate-50 hover:bg-slate-100">الفصل (ج)</button>
+        <button onclick="switchTab('الفصل (د)')" id="tab-الفصل (د)" class="tab-btn px-4 py-2 rounded-xl font-semibold text-xs text-slate-600 bg-slate-50 hover:bg-slate-100">الفصل (د)</button>
+      </div>
+    </div>
+
+    <!-- Leaderboard Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-right border-collapse">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 text-xs font-bold uppercase border-b border-slate-100">
+              <th class="p-4 text-center">المركز</th>
+              <th class="p-4">اسم الطالب</th>
+              <th class="p-4 text-center">الفصل</th>
+              <th class="p-4 text-center">الاختبارات</th>
+              <th class="p-4 text-center">المجموع</th>
+              <th class="p-4 text-center">المتوسط</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody" class="divide-y divide-slate-100 text-sm">
+            <!-- Dynamic Content -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-white border-t border-slate-100 py-6 mt-12 text-center text-xs text-slate-400">
+    منصة تحدي القدرات التعليمية &copy; جميع الحقوق محفوظة
+  </footer>
+
+  <script>
+    let currentClass = '';
+    let allData = [];
+
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/stats');
+        const data = await res.json();
+        document.getElementById('statStudents').textContent = data.totalStudents || 0;
+        document.getElementById('statTests').textContent = data.totalTests || 0;
+      } catch (e) {
+        console.error('Error stats:', e);
+      }
+    }
+
+    async function loadLeaderboard() {
+      const tbody = document.getElementById('leaderboardBody');
+      tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 font-medium">جاري تحميل الترتيب...</td></tr>`;
+
+      try {
+        const url = currentClass ? `/api/leaderboard?class=${encodeURIComponent(currentClass)}` : '/api/leaderboard';
+        const res = await fetch(url);
+        allData = await res.json();
+        renderTable(allData);
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-rose-500">حدث خطأ في تحميل البيانات</td></tr>`;
+      }
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('leaderboardBody');
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">لا يوجد طلاب مضافون في هذا القسم حالياً</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map((student) => {
+        let badge = `<span class="font-black text-slate-500">#${student.rank}</span>`;
+        let rowStyle = "hover:bg-slate-50/80";
+
+        if (student.rank === 1) {
+          badge = `<span class="text-2xl">🥇</span>`;
+          rowStyle = "bg-amber-50/80 gold-glow font-bold border-l-4 border-amber-400";
+        } else if (student.rank === 2) {
+          badge = `<span class="text-2xl">🥈</span>`;
+          rowStyle = "bg-slate-100/80 font-bold border-l-4 border-slate-400";
+        } else if (student.rank === 3) {
+          badge = `<span class="text-2xl">🥉</span>`;
+          rowStyle = "bg-orange-50/70 font-bold border-l-4 border-orange-400";
+        }
+
+        return `
+          <tr class="${rowStyle} transition">
+            <td class="p-4 text-center font-bold">${badge}</td>
+            <td class="p-4 font-bold text-slate-800">${student.name}</td>
+            <td class="p-4 text-center"><span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs rounded-lg font-extrabold">${student.class_name}</span></td>
+            <td class="p-4 text-center font-medium">${student.tests_count}</td>
+            <td class="p-4 text-center font-bold text-slate-700">${student.total_score}</td>
+            <td class="p-4 text-center font-black text-indigo-600 text-base">${student.avg_score}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterStudents() {
+      const query = document.getElementById('searchInput').value.trim().toLowerCase();
+      if (!query) {
+        renderTable(allData);
+        return;
+      }
+      const filtered = allData.filter(s => s.name.toLowerCase().includes(query));
+      renderTable(filtered);
+    }
+
+    function switchTab(className) {
+      currentClass = className;
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+        btn.classList.add('bg-slate-50', 'text-slate-600');
+      });
+
+      const activeId = className ? `tab-${className}` : 'tab-all';
+      const activeBtn = document.getElementById(activeId);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-slate-50', 'text-slate-600');
+        activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+      }
+
+      loadLeaderboard();
+    }
+
+    loadStats();
+    loadLeaderboard();
+  </script>
+</body>
+</html>
