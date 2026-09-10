@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة الإدارة - تحدي القدرات</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style> body { font-family: 'Cairo', sans-serif; } </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+
+  <!-- Password Modal -->
+  <div id="authModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl text-center space-y-4">
+      <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">🔒</div>
+      <h3 class="text-xl font-bold">تسجيل دخول الإدارة</h3>
+      <p class="text-xs text-slate-500">يرجى إدخال كلمة مرور لوحة التحكم للوصول إلى خيارات التعديل</p>
+      <input type="password" id="adminPasswordInput" placeholder="كلمة المرور" class="w-full border border-slate-300 p-3 rounded-xl text-center font-bold text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+      <p id="authError" class="text-xs text-rose-500 hidden font-bold">كلمة المرور خاطئة!</p>
+      <button onclick="loginAdmin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition text-sm">دخول</button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="bg-slate-900 text-white py-4 shadow-md sticky top-0 z-40">
+    <div class="container mx-auto px-4 flex justify-between items-center">
+      <h1 class="text-lg font-black flex items-center gap-2">⚙️ لوحة تحكم تحدي القدرات</h1>
+      <div class="flex gap-2">
+        <a href="/" target="_blank" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl font-bold transition">مشاهدة ترتيب الطلاب ↗</a>
+        <button onclick="logoutAdmin()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-xl font-bold transition">خروج</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-8 max-w-5xl space-y-8">
+
+    <!-- Section 1: الطلاب -->
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+      <h2 class="text-base font-bold mb-4 text-indigo-700 flex items-center gap-2">👨‍🎓 1. إدارة الطلاب</h2>
+      
+      <form id="addStudentForm" class="flex flex-col md:flex-row gap-3 mb-6">
+        <input type="text" id="studentName" placeholder="اسم الطالب الثلاثي" required class="flex-grow border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+        <select id="studentClass" required class="border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+          <option value="">إختر الفصل</option>
+          <option value="الفصل (أ)">الفصل (أ)</option>
+          <option value="الفصل (ب)">الفصل (ب)</option>
+          <option value="الفصل (ج)">الفصل (ج)</option>
+          <option value="الفصل (د)">الفصل (د)</option>
+        </select>
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition">+ إضافة طالب</button>
+      </form>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-right text-sm">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 border-b">
+              <th class="p-3">#</th>
+              <th class="p-3">اسم الطالب</th>
+              <th class="p-3">الفصل</th>
+              <th class="p-3 text-center">إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="studentsAdminBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Section 2: الاختبارات والدرجات -->
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+      <h2 class="text-base font-bold mb-4 text-emerald-700 flex items-center gap-2">📝 2. إدارة الاختبارات ورصد الدرجات</h2>
+
+      <!-- إضافة اختبار -->
+      <form id="addTestForm" class="flex flex-col md:flex-row gap-3 mb-6">
+        <input type="text" id="testName" placeholder="اسم الاختبار (مثال: اختبار الأسبوع الأول)" required class="flex-grow border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+        <input type="number" id="testMaxScore" placeholder="الدرجة العظمى (100)" value="100" class="w-full md:w-36 border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition">+ إنشاء اختبار جديد</button>
+      </form>
+
+      <!-- اختيار اختبار -->
+      <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div class="flex items-center gap-3 w-full md:w-auto">
+          <label class="font-bold text-xs text-slate-600 whitespace-nowrap">حدد الاختبار للرصد:</label>
+          <select id="selectTest" onchange="loadTestScores()" class="border border-slate-300 p-2 rounded-xl text-sm bg-white w-full md:w-64 font-bold">
+          </select>
+        </div>
+        <button onclick="deleteCurrentTest()" class="text-rose-600 hover:text-rose-800 text-xs font-bold underline">🗑️ حذف الاختبار المحدد بالكامل</button>
+      </div>
+
+      <!-- جدول الدرجات -->
+      <form id="scoresForm" onsubmit="saveScores(event)">
+        <div id="scoresTableContainer" class="overflow-x-auto mb-4">
+          <table class="w-full text-right text-sm">
+            <thead>
+              <tr class="bg-slate-100 text-slate-600 border-b">
+                <th class="p-3">اسم الطالب</th>
+                <th class="p-3">الفصل</th>
+                <th class="p-3">الدرجة</th>
+              </tr>
+            </thead>
+            <tbody id="scoresBody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+        <button type="submit" id="saveScoresBtn" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold text-sm transition w-full md:w-auto shadow-md">💾 حفظ الدرجات وتحديث الترتيب تلقائياً</button>
+      </form>
+
+    </div>
+
+  </main>
+
+  <script>
+    let adminToken = localStorage.getItem('adminToken') || '';
+
+    function checkAuth() {
+      if (adminToken) {
+        document.getElementById('authModal').classList.add('hidden');
+        fetchStudents();
+        fetchTests();
+      } else {
+        document.getElementById('authModal').classList.remove('hidden');
+      }
+    }
+
+    async function loginAdmin() {
+      const pass = document.getElementById('adminPasswordInput').value;
+      const res = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pass })
+      });
+      const data = await res.json();
+      if (data.success) {
+        adminToken = data.token;
+        localStorage.setItem('adminToken', adminToken);
+        document.getElementById('authError').classList.add('hidden');
+        checkAuth();
+      } else {
+        document.getElementById('authError').classList.remove('hidden');
+      }
+    }
+
+    function logoutAdmin() {
+      localStorage.removeItem('adminToken');
+      adminToken = '';
+      location.reload();
+    }
+
+    function getAuthHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'x-admin-key': adminToken
+      };
+    }
+
+    async function fetchStudents() {
+      const res = await fetch('/api/admin/students', { headers: getAuthHeaders() });
+      if (res.status === 401) return logoutAdmin();
+      const students = await res.json();
+      const tbody = document.getElementById('studentsAdminBody');
+      
+      tbody.innerHTML = students.map((s, idx) => `
+        <tr>
+          <td class="p-3 text-slate-400 font-bold">${idx + 1}</td>
+          <td class="p-3 font-bold">${s.name}</td>
+          <td class="p-3"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded font-bold text-xs">${s.class_name}</span></td>
+          <td class="p-3 text-center space-x-2 space-x-reverse">
+            <button onclick="editStudent(${s.id}, '${s.name}', '${s.class_name}')" class="text-indigo-600 hover:underline font-bold text-xs">تعديل</button>
+            <button onclick="deleteStudent(${s.id})" class="text-rose-600 hover:underline font-bold text-xs">حذف</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('addStudentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('studentName').value;
+      const class_name = document.getElementById('studentClass').value;
+
+      await fetch('/api/admin/students', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ name, class_name })
+      });
+
+      document.getElementById('studentName').value = '';
+      fetchStudents();
+    });
+
+    async function editStudent(id, oldName, oldClass) {
+      const newName = prompt('تعديل اسم الطالب:', oldName);
+      if (!newName) return;
+      const newClass = prompt('تعديل الفصل (الفصل (أ) / الفصل (ب) / الفصل (ج) / الفصل (د)):', oldClass);
+      if (!newClass) return;
+
+      await fetch(`/api/admin/students/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ name: newName, class_name: newClass })
+      });
+      fetchStudents();
+    }
+
+    async function deleteStudent(id) {
+      if (confirm('هل أنت متأكد من حذف هذا الطالب؟ ستمحى جميع درجاته أيضاً.')) {
+        await fetch(`/api/admin/students/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+        fetchStudents();
+      }
+    }
+
+    async function fetchTests() {
+      const res = await fetch('/api/admin/tests', { headers: getAuthHeaders() });
+      if (res.status === 401) return logoutAdmin();
+      const tests = await res.json();
+      const select = document.getElementById('selectTest');
+      
+      if (tests.length === 0) {
+        select.innerHTML = '<option value="">لا توجد اختبارات مضافة</option>';
+        document.getElementById('scoresBody').innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400">أنشئ اختباراً أولاً</td></tr>';
+        document.getElementById('saveScoresBtn').classList.add('hidden');
+        return;
+      }
+
+      select.innerHTML = tests.map(t => `<option value="${t.id}">${t.name} (من ${t.max_score})</option>`).join('');
+      loadTestScores();
+    }
+
+    document.getElementById('addTestForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('testName').value;
+      const max_score = document.getElementById('testMaxScore').value;
+
+      await fetch('/api/admin/tests', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ name, max_score })
+      });
+
+      document.getElementById('testName').value = '';
+      fetchTests();
+    });
+
+    async function deleteCurrentTest() {
+      const testId = document.getElementById('selectTest').value;
+      if (!testId) return;
+      if (confirm('هل أنت متأكد من حذف هذا الاختبار نهائياً؟')) {
+        await fetch(`/api/admin/tests/${testId}`, { method: 'DELETE', headers: getAuthHeaders() });
+        fetchTests();
+      }
+    }
+
+    async function loadTestScores() {
+      const testId = document.getElementById('selectTest').value;
+      if (!testId) return;
+
+      const res = await fetch(`/api/admin/tests/${testId}/scores`, { headers: getAuthHeaders() });
+      const data = await res.json();
+      const tbody = document.getElementById('scoresBody');
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400">أضف طلاباً لترصد درجاتهم</td></tr>';
+        document.getElementById('saveScoresBtn').classList.add('hidden');
+        return;
+      }
+
+      tbody.innerHTML = data.map(item => `
+        <tr>
+          <td class="p-3 font-bold">${item.name}</td>
+          <td class="p-3 text-slate-500 text-xs">${item.class_name}</td>
+          <td class="p-3">
+            <input type="number" step="0.5" data-student-id="${item.student_id}" value="${item.score !== null ? item.score : ''}" placeholder="الدرجة" class="score-input border border-slate-300 p-2 rounded-lg w-32 focus:ring-2 focus:ring-emerald-500 outline-none text-sm font-bold">
+          </td>
+        </tr>
+      `).join('');
+
+      document.getElementById('saveScoresBtn').classList.remove('hidden');
+    }
+
+    async function saveScores(e) {
+      e.preventDefault();
+      const testId = document.getElementById('selectTest').value;
+      if (!testId) return;
+
+      const inputs = document.querySelectorAll('.score-input');
+      const scores = Array.from(inputs).map(input => ({
+        student_id: input.getAttribute('data-student-id'),
+        score: input.value
+      }));
+
+      const res = await fetch(`/api/admin/tests/${testId}/scores`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ scores })
+      });
+
+      if (res.ok) {
+        alert('✅ تم حفظ الدرجات وتحديث ترتيب الطلاب بنجاح!');
+      } else {
+        alert('❌ حدث خطأ أثناء الحفظ');
+      }
+    }
+
+    checkAuth();
+  </script>
+</body>
+</html>
